@@ -1,59 +1,34 @@
 import streamlit as st
-import pandas as pd
-import matplotlib.pyplot as plt
-import requests
 
-# Function to fetch COVID-19 data
-@st.cache
-def fetch_data(url):
-    response = requests.get(url)
-    data = response.json()
-    return data
+# Function to calculate BMI
+def calculate_bmi(height, weight):
+    bmi = weight / (height / 100) ** 2
+    return bmi
 
-# Function to process data
-def process_data(data):
-    df = pd.DataFrame(data['Countries'])
-    df = df[['Country', 'TotalConfirmed', 'TotalDeaths', 'TotalRecovered']]
-    return df
+# Function to determine BMI category
+def bmi_category(bmi):
+    if bmi < 18.5:
+        return "Underweight"
+    elif 18.5 <= bmi < 24.9:
+        return "Normal weight"
+    elif 25 <= bmi < 29.9:
+        return "Overweight"
+    else:
+        return "Obesity"
 
 # App title
-st.title('COVID-19 Tracker')
+st.title('BMI Calculator')
 
-# Fetch data
-data_url = "https://api.covid19api.com/summary"
-data = fetch_data(data_url)
-df = process_data(data)
+# Input fields
+height = st.number_input('Enter your height in cm:', min_value=0.0, format="%.2f")
+weight = st.number_input('Enter your weight in kg:', min_value=0.0, format="%.2f")
 
-# Display data
-st.header('COVID-19 Data')
-st.write(df)
-
-# Visualizations
-st.header('Visualizations')
-
-# Total cases per country
-st.subheader('Total Cases Per Country')
-plt.figure(figsize=(10, 5))
-plt.barh(df['Country'], df['TotalConfirmed'], color='blue')
-plt.xlabel('Total Cases')
-plt.ylabel('Country')
-plt.title('Total Cases Per Country')
-st.pyplot(plt)
-
-# Total deaths per country
-st.subheader('Total Deaths Per Country')
-plt.figure(figsize=(10, 5))
-plt.barh(df['Country'], df['TotalDeaths'], color='red')
-plt.xlabel('Total Deaths')
-plt.ylabel('Country')
-plt.title('Total Deaths Per Country')
-st.pyplot(plt)
-
-# Total recoveries per country
-st.subheader('Total Recoveries Per Country')
-plt.figure(figsize=(10, 5))
-plt.barh(df['Country'], df['TotalRecovered'], color='green')
-plt.xlabel('Total Recoveries')
-plt.ylabel('Country')
-plt.title('Total Recoveries Per Country')
-st.pyplot(plt)
+# Calculate BMI when the button is clicked
+if st.button('Calculate BMI'):
+    if height > 0 and weight > 0:
+        bmi = calculate_bmi(height, weight)
+        category = bmi_category(bmi)
+        st.write(f'Your BMI is: {bmi:.2f}')
+        st.write(f'You are classified as: {category}')
+    else:
+        st.write('Please enter valid height and weight values.')
