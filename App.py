@@ -1,60 +1,35 @@
 import streamlit as st
-import pandas as pd
-import matplotlib.pyplot as plt
 
-# Initialize data storage
-if 'data' not in st.session_state:
-    st.session_state['data'] = pd.DataFrame(columns=['Date', 'Type', 'Category', 'Amount'])
+# Function to calculate BMI
+def calculate_bmi(height, weight):
+    bmi = weight / (height / 100) ** 2
+    return bmi
 
-# Function to add new data
-def add_data(date, trans_type, category, amount):
-    new_data = {'Date': date, 'Type': trans_type, 'Category': category, 'Amount': amount}
-    st.session_state['data'] = st.session_state['data'].append(new_data, ignore_index=True)
+# Function to determine BMI category
+def bmi_category(bmi):
+    if bmi < 18.5:
+        return "Underweight"
+    elif 18.5 <= bmi < 24.9:
+        return "Normal weight"
+    elif 25 <= bmi < 29.9:
+        return "Overweight"
+    else:
+        return "Obesity"
 
 # App title
-st.title('Finance Tracker')
+st.title('BMI Calculator')
 
-# Input form
-st.header('Log Your Financial Data')
-with st.form(key='finance_form'):
-    date = st.date_input('Date')
-    trans_type = st.selectbox('Type', ['Income', 'Expense'])
-    category = st.text_input('Category')
-    amount = st.number_input('Amount', min_value=0.0, step=0.01)
-    submit_button = st.form_submit_button(label='Add Data')
-    if submit_button:
-        add_data(date, trans_type, category, amount)
-        st.success('Data added successfully!')
+# Input fields
+height = st.number_input('Enter your height in cm:', min_value=0.0, format="%.2f")
+weight = st.number_input('Enter your weight in kg:', min_value=0.0, format="%.2f")
 
-# Display data
-st.header('Financial Data')
-st.write(st.session_state['data'])
+# Calculate BMI when the button is clicked
+if st.button('Calculate BMI'):
+    if height > 0 and weight > 0:
+        bmi = calculate_bmi(height, weight)
+        category = bmi_category(bmi)
+        st.write(f'Your BMI is: {bmi:.2f}')
+        st.write(f'You are classified as: {category}')
+    else:
+        st.write('Please enter valid height and weight values.')
 
-# Visualizations
-if not st.session_state['data'].empty:
-    st.header('Visualizations')
-
-    # Total income and expenses over time
-    st.subheader('Income and Expenses Over Time')
-    income_data = st.session_state['data'][st.session_state['data']['Type'] == 'Income']
-    expense_data = st.session_state['data'][st.session_state['data']['Type'] == 'Expense']
-    
-    plt.figure(figsize=(10, 5))
-    plt.plot(income_data['Date'], income_data['Amount'], label='Income', marker='o', color='green')
-    plt.plot(expense_data['Date'], expense_data['Amount'], label='Expense', marker='o', color='red')
-    plt.title('Income and Expenses Over Time')
-    plt.xlabel('Date')
-    plt.ylabel('Amount')
-    plt.legend()
-    st.pyplot(plt)
-
-    # Expenses by category
-    st.subheader('Expenses by Category')
-    expense_by_category = expense_data.groupby('Category')['Amount'].sum()
-    st.bar_chart(expense_by_category)
-
-    # Summary statistics
-    st.header('Summary Statistics')
-    st.write(st.session_state['data'].describe())
-else:
-    st.write('No data available. Please log your financial data.')
