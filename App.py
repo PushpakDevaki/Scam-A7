@@ -1,70 +1,59 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+import requests
 
-# Function to load and process data
+# Function to fetch COVID-19 data
 @st.cache
-def load_data(file):
-    data = pd.read_csv(file)
-    data['Date'] = pd.to_datetime(data['Date'])
+def fetch_data(url):
+    response = requests.get(url)
+    data = response.json()
     return data
 
-# Function to plot total points over time
-def plot_total_points(data):
-    total_points = data.groupby('Date')['Points'].sum()
-    plt.figure(figsize=(10, 5))
-    plt.plot(total_points.index, total_points.values, marker='o')
-    plt.title('Total Points Over Time')
-    plt.xlabel('Date')
-    plt.ylabel('Total Points')
-    st.pyplot(plt)
-
-# Function to plot average points per game over time
-def plot_avg_points(data):
-    avg_points = data.groupby('Date')['Points'].mean()
-    plt.figure(figsize=(10, 5))
-    plt.plot(avg_points.index, avg_points.values, marker='o', color='orange')
-    plt.title('Average Points Per Game Over Time')
-    plt.xlabel('Date')
-    plt.ylabel('Average Points')
-    st.pyplot(plt)
-
-# Function to plot distribution of points
-def plot_points_distribution(data):
-    plt.figure(figsize=(10, 5))
-    plt.hist(data['Points'], bins=30, color='purple', edgecolor='black')
-    plt.title('Distribution of Points')
-    plt.xlabel('Points')
-    plt.ylabel('Frequency')
-    st.pyplot(plt)
+# Function to process data
+def process_data(data):
+    df = pd.DataFrame(data['Countries'])
+    df = df[['Country', 'TotalConfirmed', 'TotalDeaths', 'TotalRecovered']]
+    return df
 
 # App title
-st.title('Sports Analytics Platform')
+st.title('COVID-19 Tracker')
 
-# File uploader
-uploaded_file = st.file_uploader('Upload your CSV file', type=['csv'])
+# Fetch data
+data_url = "https://api.covid19api.com/summary"
+data = fetch_data(data_url)
+df = process_data(data)
 
-if uploaded_file is not None:
-    data = load_data(uploaded_file)
-    st.write(data.head())
+# Display data
+st.header('COVID-19 Data')
+st.write(df)
 
-    st.header('Visualizations')
+# Visualizations
+st.header('Visualizations')
 
-    # Total points over time
-    st.subheader('Total Points Over Time')
-    plot_total_points(data)
+# Total cases per country
+st.subheader('Total Cases Per Country')
+plt.figure(figsize=(10, 5))
+plt.barh(df['Country'], df['TotalConfirmed'], color='blue')
+plt.xlabel('Total Cases')
+plt.ylabel('Country')
+plt.title('Total Cases Per Country')
+st.pyplot(plt)
 
-    # Average points per game over time
-    st.subheader('Average Points Per Game Over Time')
-    plot_avg_points(data)
+# Total deaths per country
+st.subheader('Total Deaths Per Country')
+plt.figure(figsize=(10, 5))
+plt.barh(df['Country'], df['TotalDeaths'], color='red')
+plt.xlabel('Total Deaths')
+plt.ylabel('Country')
+plt.title('Total Deaths Per Country')
+st.pyplot(plt)
 
-    # Distribution of points
-    st.subheader('Distribution of Points')
-    plot_points_distribution(data)
-
-    # Summary statistics
-    st.header('Summary Statistics')
-    st.write(data.describe())
-else:
-    st.write('Please upload a CSV file to analyze the data.')
-
+# Total recoveries per country
+st.subheader('Total Recoveries Per Country')
+plt.figure(figsize=(10, 5))
+plt.barh(df['Country'], df['TotalRecovered'], color='green')
+plt.xlabel('Total Recoveries')
+plt.ylabel('Country')
+plt.title('Total Recoveries Per Country')
+st.pyplot(plt)
