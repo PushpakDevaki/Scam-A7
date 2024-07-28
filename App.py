@@ -63,4 +63,3 @@ if not st.session_state['data'].empty:
 
 else:
     st.write('No data available. Please log your health data.')
-
