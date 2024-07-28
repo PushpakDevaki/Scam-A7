@@ -9,37 +9,37 @@ def load_data(file):
     data['Date'] = pd.to_datetime(data['Date'])
     return data
 
-# Function to plot total streams over time
-def plot_total_streams(data):
-    total_streams = data.groupby('Date')['Streams'].sum()
+# Function to plot total points over time
+def plot_total_points(data):
+    total_points = data.groupby('Date')['Points'].sum()
     plt.figure(figsize=(10, 5))
-    plt.plot(total_streams.index, total_streams.values, marker='o')
-    plt.title('Total Streams Over Time')
+    plt.plot(total_points.index, total_points.values, marker='o')
+    plt.title('Total Points Over Time')
     plt.xlabel('Date')
-    plt.ylabel('Total Streams')
+    plt.ylabel('Total Points')
     st.pyplot(plt)
 
-# Function to plot average streams per song over time
-def plot_avg_streams(data):
-    avg_streams = data.groupby('Date')['Streams'].mean()
+# Function to plot average points per game over time
+def plot_avg_points(data):
+    avg_points = data.groupby('Date')['Points'].mean()
     plt.figure(figsize=(10, 5))
-    plt.plot(avg_streams.index, avg_streams.values, marker='o', color='orange')
-    plt.title('Average Streams Per Song Over Time')
+    plt.plot(avg_points.index, avg_points.values, marker='o', color='orange')
+    plt.title('Average Points Per Game Over Time')
     plt.xlabel('Date')
-    plt.ylabel('Average Streams')
+    plt.ylabel('Average Points')
     st.pyplot(plt)
 
-# Function to plot distribution of streams
-def plot_stream_distribution(data):
+# Function to plot distribution of points
+def plot_points_distribution(data):
     plt.figure(figsize=(10, 5))
-    plt.hist(data['Streams'], bins=30, color='purple', edgecolor='black')
-    plt.title('Distribution of Streams')
-    plt.xlabel('Streams')
+    plt.hist(data['Points'], bins=30, color='purple', edgecolor='black')
+    plt.title('Distribution of Points')
+    plt.xlabel('Points')
     plt.ylabel('Frequency')
     st.pyplot(plt)
 
 # App title
-st.title('Music Streaming Analysis Tool')
+st.title('Sports Analytics Platform')
 
 # File uploader
 uploaded_file = st.file_uploader('Upload your CSV file', type=['csv'])
@@ -50,17 +50,17 @@ if uploaded_file is not None:
 
     st.header('Visualizations')
 
-    # Total streams over time
-    st.subheader('Total Streams Over Time')
-    plot_total_streams(data)
+    # Total points over time
+    st.subheader('Total Points Over Time')
+    plot_total_points(data)
 
-    # Average streams per song over time
-    st.subheader('Average Streams Per Song Over Time')
-    plot_avg_streams(data)
+    # Average points per game over time
+    st.subheader('Average Points Per Game Over Time')
+    plot_avg_points(data)
 
-    # Distribution of streams
-    st.subheader('Distribution of Streams')
-    plot_stream_distribution(data)
+    # Distribution of points
+    st.subheader('Distribution of Points')
+    plot_points_distribution(data)
 
     # Summary statistics
     st.header('Summary Statistics')
