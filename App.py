@@ -1,42 +1,47 @@
 import streamlit as st
-import requests
+import pandas as pd
 
-# Function to get weather data
-def get_weather(city_name, api_key):
-    base_url = "http://api.openweathermap.org/data/2.5/weather?"
-    complete_url = base_url + "q=" + city_name + "&appid=" + api_key + "&units=metric"
-    response = requests.get(complete_url)
-    return response.json()
+# Initialize session state for storing data
+if 'finance_data' not in st.session_state:
+    st.session_state.finance_data = pd.DataFrame(columns=['Date', 'Type', 'Category', 'Amount'])
+
+# Function to add a new entry
+def add_entry(date, entry_type, category, amount):
+    new_entry = pd.DataFrame({
+        'Date': [date],
+        'Type': [entry_type],
+        'Category': [category],
+        'Amount': [amount]
+    })
+    st.session_state.finance_data = pd.concat([st.session_state.finance_data, new_entry], ignore_index=True)
 
 # Streamlit App
 def main():
-    st.title("Weather Tracker")
+    st.title("Personal Finance Tracker")
 
-    api_key = st.text_input("Enter your OpenWeatherMap API Key")
-    city_name = st.text_input("Enter City Name")
+    with st.form("entry_form"):
+        date = st.date_input("Date")
+        entry_type = st.selectbox("Type", ["Income", "Expense"])
+        category = st.text_input("Category")
+        amount = st.number_input("Amount", min_value=0.0, format="%.2f")
+        submit = st.form_submit_button("Add Entry")
+        
+        if submit:
+            add_entry(date, entry_type, category, amount)
+            st.success("Entry added successfully!")
 
-    if st.button("Get Weather"):
-        if api_key and city_name:
-            weather_data = get_weather(city_name, api_key)
-            if weather_data["cod"] != "404":
-                main_weather = weather_data["weather"][0]["main"]
-                description = weather_data["weather"][0]["description"]
-                temp = weather_data["main"]["temp"]
-                pressure = weather_data["main"]["pressure"]
-                humidity = weather_data["main"]["humidity"]
-                wind_speed = weather_data["wind"]["speed"]
-                
-                st.subheader(f"Weather in {city_name}")
-                st.write(f"**Main:** {main_weather}")
-                st.write(f"**Description:** {description}")
-                st.write(f"**Temperature:** {temp} °C")
-                st.write(f"**Pressure:** {pressure} hPa")
-                st.write(f"**Humidity:** {humidity} %")
-                st.write(f"**Wind Speed:** {wind_speed} m/s")
-            else:
-                st.error("City not found")
-        else:
-            st.error("Please provide both API Key and City Name")
+    st.subheader("Finance Data")
+    st.dataframe(st.session_state.finance_data)
+
+    if not st.session_state.finance_data.empty:
+        st.subheader("Summary")
+        summary = st.session_state.finance_data.groupby(['Type']).sum()['Amount']
+        st.write(summary)
+        
+        st.subheader("Expense Breakdown by Category")
+        expense_data = st.session_state.finance_data[st.session_state.finance_data['Type'] == 'Expense']
+        expense_summary = expense_data.groupby(['Category']).sum()['Amount']
+        st.bar_chart(expense_summary)
 
 if __name__ == "__main__":
     main()
